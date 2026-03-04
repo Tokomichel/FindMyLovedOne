@@ -52,11 +52,17 @@ def login(req: Request):
     if "password" not in req.data or "login" not in req.data:
         return Response(data={"message": "Missing password or login"}, status=status.HTTP_400_BAD_REQUEST)
 
-    contact = Contact.objects.get(login=req.data["login"])
+    try:
+        contact = Contact.objects.get(login=req.data["login"])
+    except Contact.DoesNotExist:
+        return Response(data={"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
     correct_hash: bool = verifier_password(req.data["password"], contact.password)
 
     if not correct_hash:
         return Response(data={"message": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
+
+    #logic jwt
 
     _data = {
         "login": contact.login,
