@@ -1,0 +1,93 @@
+import bcrypt
+
+from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.views import APIView
+
+from contact.models import Contact
+
+
+def validate_contact(contact: dict):
+    if "first_name" not in contact \
+            or "last_name" not in contact \
+            or "email" not in contact \
+            or "first_phone" not in contact \
+            or "city" not in contact \
+            or "email" not in contact \
+            or "password" not in contact \
+            or "login" not in contact \
+            or "adresse" not in contact:
+        return False
+    return True
+
+def hasher_chaine(password: str) -> str:
+
+    chaine_encode = password.encode("utf-8")
+
+    resultat_hash = bcrypt.hashpw(chaine_encode, bcrypt.gensalt())
+
+    return resultat_hash.decode("utf-8")
+
+def verifier_password(chaine_claire: str, chaine_hashee: str) -> bool:
+    chaine_encode = chaine_claire.encode("utf-8")
+    chaine_hashee_encode = chaine_hashee.encode("utf-8")
+
+    return bcrypt.checkpw(chaine_encode, chaine_hashee_encode)
+
+
+
+# Create your views here.
+
+@api_view(['GET'])
+def api_(req: Request):
+    _data = {
+        "message": "Hello World!"
+    }
+    return Response(data=_data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def login(req: Request):
+    if "password" not in req.data or "login" not in req.data:
+        return Response(data={"message": "Missing password or login"}, status=status.HTTP_400_BAD_REQUEST)
+
+    contact = Contact.objects.get(login=req.data["login"])
+    correct_hash: bool = verifier_password(req.data["password"], contact.password)
+
+    if not correct_hash:
+        return Response(data={"message": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
+
+    _data = {
+        "login": contact.login,
+        "first_name": contact.first_name,
+        "last_name": contact.last_name,
+        "email": contact.email,
+        "first_phone": contact.first_phone,
+        "second_phone": contact.second_phone,
+        "city": contact.city,
+    }
+
+    return Response(data=_data, status=status.HTTP_200_OK)
+
+class api_endpoints(APIView):
+
+    def post(self, request):
+        print(request.data)
+        if validate_contact(dict(request.data)):
+            # On continue la procedure de création
+            contact = Contact(**request.data)
+
+            #Je hash le mot de passe
+            hashed_password = hasher_chaine(contact.password)
+            contact.password = hashed_password
+            contact.save()
+            return Response(data={"mesasge": "Opération goes succesfully"}, status=status.HTTP_200_OK)
+
+        return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
