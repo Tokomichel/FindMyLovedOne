@@ -20,3 +20,6 @@ class Code(models.Model):
     contact = models.OneToOneField(Contact, on_delete=models.CASCADE)
     code = models.CharField(max_length=100, unique=True)
     scan_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.contact.first_name} *************** {self.code}"

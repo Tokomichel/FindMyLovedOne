@@ -13,11 +13,12 @@ def token_required(view_func):
         if not auth_header:
             return Response(data={"message": "Missing authorization header"}, status=status.HTTP_400_BAD_REQUEST)
 
-        token = auth_header.split()[1] #On extrait le token en retirant le "bearer"
+        token = auth_header.split(' ')[1] #On extrait le token en retirant le "bearer"
+
 
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            request.user_id = payload.get("user_id")
+            request.data["user_id"] = payload.get("user_id")
 
         except jwt.ExpiredSignatureError:
             return Response(data={"message": "Le token a expiré. Veuillez vous reconnecter"}, status=status.HTTP_401_UNAUTHORIZED)

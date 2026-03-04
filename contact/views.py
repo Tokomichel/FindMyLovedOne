@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 import datetime
 
-from contact.models import Contact
+from contact.models import Contact, Code
 from find import settings
 from contact.utils import token_required
 
@@ -90,6 +90,22 @@ def login(req: Request):
 
     return Response(data=_data, status=status.HTTP_200_OK)
 
+#liste des codes d'un contact
+
+@api_view(['GET'])
+@token_required
+def liste_code(req: Request):
+
+    contact = Contact.objects.get(id=req.data["user_id"])
+    code = Code.objects.filter(contact=contact)
+
+    codes = list()
+
+    for elt in code:
+        codes.append(str(elt))
+    return Response(data=codes, status=status.HTTP_200_OK)
+
+
 class api_endpoints(APIView):
 
     def post(self, request):
@@ -102,7 +118,7 @@ class api_endpoints(APIView):
             hashed_password = hasher_chaine(contact.password)
             contact.password = hashed_password
             contact.save()
-            return Response(data={"mesasge": "Opération goes succesfully"}, status=status.HTTP_200_OK)
+            return Response(data={"message": "Opération goes succesfully"}, status=status.HTTP_200_OK)
 
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
 
