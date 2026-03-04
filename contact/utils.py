@@ -23,3 +23,6 @@ def token_required(view_func):
             return Response(data={"message": "Le token a expiré. Veuillez vous reconnecter"}, status=status.HTTP_401_UNAUTHORIZED)
         except jwt.InvalidTokenError:
             return Response(data={"message": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return view_func(request, *args, **kwargs)
+    return wrapper

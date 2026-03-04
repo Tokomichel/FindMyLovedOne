@@ -1,12 +1,16 @@
 import bcrypt
+import jwt
 
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.views import APIView
+import datetime
 
 from contact.models import Contact
+from find import settings
+from contact.utils import token_required
 
 
 def validate_contact(contact: dict):
@@ -47,6 +51,8 @@ def api_(req: Request):
     }
     return Response(data=_data, status=status.HTTP_200_OK)
 
+
+# endpoint du login
 @api_view(['POST'])
 def login(req: Request):
     if "password" not in req.data or "login" not in req.data:
@@ -63,15 +69,23 @@ def login(req: Request):
         return Response(data={"message": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
 
     #logic jwt
+    maintenant = datetime.datetime.now(datetime.timezone.utc)
+    expiration = maintenant + datetime.timedelta(days=7)
+
+    payload = {
+        "user_id": contact.id,
+        "login": contact.login,
+        "exp":expiration,
+        "iat":maintenant,
+    }
+
+    #génération du token
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
     _data = {
         "login": contact.login,
-        "first_name": contact.first_name,
-        "last_name": contact.last_name,
-        "email": contact.email,
-        "first_phone": contact.first_phone,
-        "second_phone": contact.second_phone,
-        "city": contact.city,
+        "token": token,
+        "message": "Successful login",
     }
 
     return Response(data=_data, status=status.HTTP_200_OK)
