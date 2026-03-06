@@ -1,12 +1,16 @@
 import bcrypt
+import jwt
 
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.views import APIView
+import datetime
 
-from contact.models import Contact
+from contact.models import Contact, Code
+from find import settings
+from contact.utils import token_required
 
 
 def validate_contact(contact: dict):
@@ -47,28 +51,60 @@ def api_(req: Request):
     }
     return Response(data=_data, status=status.HTTP_200_OK)
 
+
+# endpoint du login
 @api_view(['POST'])
 def login(req: Request):
     if "password" not in req.data or "login" not in req.data:
         return Response(data={"message": "Missing password or login"}, status=status.HTTP_400_BAD_REQUEST)
 
-    contact = Contact.objects.get(login=req.data["login"])
+    try:
+        contact = Contact.objects.get(login=req.data["login"])
+    except Contact.DoesNotExist:
+        return Response(data={"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
     correct_hash: bool = verifier_password(req.data["password"], contact.password)
 
     if not correct_hash:
         return Response(data={"message": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
 
+    #logic jwt
+    maintenant = datetime.datetime.now(datetime.timezone.utc)
+    expiration = maintenant + datetime.timedelta(days=7)
+
+    payload = {
+        "user_id": contact.id,
+        "login": contact.login,
+        "exp":expiration,
+        "iat":maintenant,
+    }
+
+    #génération du token
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
     _data = {
         "login": contact.login,
-        "first_name": contact.first_name,
-        "last_name": contact.last_name,
-        "email": contact.email,
-        "first_phone": contact.first_phone,
-        "second_phone": contact.second_phone,
-        "city": contact.city,
+        "token": token,
+        "message": "Successful login",
     }
 
     return Response(data=_data, status=status.HTTP_200_OK)
+
+#liste des codes d'un contact
+
+@api_view(['GET'])
+@token_required
+def liste_code(req: Request):
+
+    contact = Contact.objects.get(id=req.data["user_id"])
+    code = Code.objects.filter(contact=contact)
+
+    codes = list()
+
+    for elt in code:
+        codes.append(str(elt))
+    return Response(data=codes, status=status.HTTP_200_OK)
+
 
 class api_endpoints(APIView):
 
@@ -82,7 +118,7 @@ class api_endpoints(APIView):
             hashed_password = hasher_chaine(contact.password)
             contact.password = hashed_password
             contact.save()
-            return Response(data={"mesasge": "Opération goes succesfully"}, status=status.HTTP_200_OK)
+            return Response(data={"message": "Opération goes succesfully"}, status=status.HTTP_200_OK)
 
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
 
