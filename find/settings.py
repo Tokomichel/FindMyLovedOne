@@ -25,9 +25,7 @@ SECRET_KEY = 'django-insecure-lmqi0jm0edaabt1+_kq#v+#3w)+mvu#@ndq536cx9h8oic0lup
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'findmylovedone.onrender.com'
-]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
