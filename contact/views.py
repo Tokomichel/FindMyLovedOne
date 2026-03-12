@@ -77,7 +77,7 @@ def login(req: Request):
         "login": contact.login,
         "exp":expiration,
         "iat":maintenant,
-    }
+    }  
 
     #génération du token
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
@@ -105,22 +105,20 @@ def liste_code(req: Request):
         codes.append(str(elt))
     return Response(data=codes, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def create_contact(self, request):
+    print(request.data)
+    if validate_contact(dict(request.data)):
+        # On continue la procedure de création
+        contact = Contact(**request.data)
 
-class api_endpoints(APIView):
+        #Je hash le mot de passe
+        hashed_password = hasher_chaine(contact.password)
+        contact.password = hashed_password
+        contact.save()
+        return Response(data={"message": "Opération goes successfully"}, status=status.HTTP_200_OK)
 
-    def post(self, request):
-        print(request.data)
-        if validate_contact(dict(request.data)):
-            # On continue la procedure de création
-            contact = Contact(**request.data)
-
-            #Je hash le mot de passe
-            hashed_password = hasher_chaine(contact.password)
-            contact.password = hashed_password
-            contact.save()
-            return Response(data={"message": "Opération goes succesfully"}, status=status.HTTP_200_OK)
-
-        return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+    return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 
