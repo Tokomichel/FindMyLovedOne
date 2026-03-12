@@ -40,7 +40,22 @@ def verifier_password(chaine_claire: str, chaine_hashee: str) -> bool:
 
     return bcrypt.checkpw(chaine_encode, chaine_hashee_encode)
 
+def create_jwt(contact: Contact) -> str:
+    # logic jwt
+    maintenant = datetime.datetime.now(datetime.timezone.utc)
+    expiration = maintenant + datetime.timedelta(days=7)
 
+    payload = {
+        "user_id": contact.id,
+        "login": contact.login,
+        "exp": expiration,
+        "iat": maintenant,
+    }
+
+    # génération du token
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+    return token
 
 # Create your views here.
 
@@ -59,7 +74,7 @@ def login(req: Request):
         return Response(data={"message": "Missing password or login"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        contact = Contact.objects.get(login=req.data["login"])
+        contact = Contact.objects.filter(login=req.data["login"])[0]
     except Contact.DoesNotExist:
         return Response(data={"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -68,19 +83,8 @@ def login(req: Request):
     if not correct_hash:
         return Response(data={"message": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
 
-    #logic jwt
-    maintenant = datetime.datetime.now(datetime.timezone.utc)
-    expiration = maintenant + datetime.timedelta(days=7)
-
-    payload = {
-        "user_id": contact.id,
-        "login": contact.login,
-        "exp":expiration,
-        "iat":maintenant,
-    }  
-
     #génération du token
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    token = create_jwt(contact)
 
     _data = {
         "login": contact.login,
@@ -107,7 +111,7 @@ def liste_code(req: Request):
 
 @api_view(['POST'])
 def create_contact(request):
-    print(request.data)
+
     if validate_contact(dict(request.data)):
         # On continue la procedure de création
         contact = Contact(**request.data)
@@ -116,7 +120,8 @@ def create_contact(request):
         hashed_password = hasher_chaine(contact.password)
         contact.password = hashed_password
         contact.save()
-        return Response(data={"message": "Opération goes successfully"}, status=status.HTTP_200_OK)
+        token = create_jwt(contact)
+        return Response(data={"message": "Opération goes successfully", "token": token}, status=status.HTTP_200_OK)
 
     return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
 
