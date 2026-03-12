@@ -10,7 +10,24 @@ d'êtres retrouvées facilement.
 
 ## Les endpoints
 
-### 1 - Authentification
+### 1 - Création de compte
+
+api-url: "http://localhost/create/". Pour celà, il faut lui passer les éléments structurés de la façon suivante:
+````json
+{
+    "first_name": "Toko",
+    "last_name": "Michel",
+    "login": "toko.michel",
+    "password": "toko",
+    "email": "toko.michel@example.com",
+    "first_phone": "0785473124",
+    "second_phone": "0785473124",
+    "city": "Limoges",
+    "adresse": "12 rue des Lilas"
+}
+````
+
+### 2 - Authentification
 
 api-url ``http://localhost/login``
 Il s'agit d'une requète type post. Dans le corp de la requete, 

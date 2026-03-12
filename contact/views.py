@@ -106,7 +106,7 @@ def liste_code(req: Request):
     return Response(data=codes, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-def create_contact(self, request):
+def create_contact(request):
     print(request.data)
     if validate_contact(dict(request.data)):
         # On continue la procedure de création
