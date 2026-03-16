@@ -1,61 +1,12 @@
-import bcrypt
-import jwt
 
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
 from rest_framework import status
-from rest_framework.views import APIView
-import datetime
 
 from contact.models import Contact, Code
-from find import settings
-from contact.utils import token_required
+from contact.utils import token_required, verifier_password, create_jwt, validate_contact, hasher_chaine
 
-
-def validate_contact(contact: dict):
-    if "first_name" not in contact \
-            or "last_name" not in contact \
-            or "email" not in contact \
-            or "first_phone" not in contact \
-            or "city" not in contact \
-            or "email" not in contact \
-            or "password" not in contact \
-            or "login" not in contact \
-            or "adresse" not in contact:
-        return False
-    return True
-
-def hasher_chaine(password: str) -> str:
-
-    chaine_encode = password.encode("utf-8")
-
-    resultat_hash = bcrypt.hashpw(chaine_encode, bcrypt.gensalt())
-
-    return resultat_hash.decode("utf-8")
-
-def verifier_password(chaine_claire: str, chaine_hashee: str) -> bool:
-    chaine_encode = chaine_claire.encode("utf-8")
-    chaine_hashee_encode = chaine_hashee.encode("utf-8")
-
-    return bcrypt.checkpw(chaine_encode, chaine_hashee_encode)
-
-def create_jwt(contact: Contact) -> str:
-    # logic jwt
-    maintenant = datetime.datetime.now(datetime.timezone.utc)
-    expiration = maintenant + datetime.timedelta(days=7)
-
-    payload = {
-        "user_id": contact.id,
-        "login": contact.login,
-        "exp": expiration,
-        "iat": maintenant,
-    }
-
-    # génération du token
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-
-    return token
 
 # Create your views here.
 
