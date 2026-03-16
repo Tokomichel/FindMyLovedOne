@@ -1,10 +1,10 @@
-# Find My Loved One -APi docs
+# Find My Loved One - APi docs
 
 <p>
-Notre Api consitue la partie backend de l'application 
+Notre Api constitue la partie backend de l'application 
 <i><b>find my loved</b></i> one 
 Elle a pour but de permettre aux personnes disparues 
-d'êtres retrouvées facilement.
+d'êtres retrouvés facilement.
 </p>
 <br/>
 
@@ -29,9 +29,9 @@ api-url: "http://localhost/create/". Pour celà, il faut lui passer les élémen
 
 ### 2 - Authentification
 
-api-url ``http://localhost/login``
+Api-url ``http://localhost/login``
 Il s'agit d'une requète type post. Dans le corp de la requete, 
-vous metrez le login et le mot de passe comme suit:
+vous mettrez le login et le mot de passe comme suit :
 
 ```json
 {
@@ -42,7 +42,7 @@ vous metrez le login et le mot de passe comme suit:
 
 Il s'agit là du mot de passe d'un utilisateur existant déjà dans la base de données
 
-* **Authentification à django admin**: les identifiants sont les suivant:
+* **Authentification à django admin** : les identifiants sont les suivants :
 
 ```json
 {
