@@ -17,7 +17,6 @@ def api_(req: Request):
     }
     return Response(data=_data, status=status.HTTP_200_OK)
 
-
 # endpoint du login
 @api_view(['POST'])
 def login(req: Request):
@@ -46,7 +45,6 @@ def login(req: Request):
     return Response(data=_data, status=status.HTTP_200_OK)
 
 #liste des codes d'un contact
-
 @api_view(['GET'])
 @token_required
 def liste_code(req: Request):
@@ -54,7 +52,7 @@ def liste_code(req: Request):
     contact = Contact.objects.get(id=req.data["user_id"])
     code = Code.objects.filter(contact=contact)
 
-    codes = list()
+    codes = []
 
     for elt in code:
         codes.append(str(elt))

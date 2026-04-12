@@ -1,4 +1,4 @@
-# Find My Loved One - APi docs
+# Find My Loved One - API docs
 
 <p>
 Notre Api constitue la partie backend de l'application 
